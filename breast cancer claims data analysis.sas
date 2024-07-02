@@ -6,7 +6,7 @@ DATA SETS: Tmp1.Tcdb_breast91.sas7bdat, Tmp1.Tcdb_breast92.sas7bdat, and merged 
 PROGRAMMER: Run Xiang 
 ********************************************/
 
-libname Run  "H:\BreastCancer";
+libname Run X.  "H:\BreastCancer";
 
 /* tcdb-91~92 breat cancer dataset*/;
 data tcdb91; set Tmp1.Tcdb_breast91;
