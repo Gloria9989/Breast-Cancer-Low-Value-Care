@@ -1,3 +1,11 @@
+Breast cancer low value care definitions and data queries using SAS.
+
+/********************************************
+Purpose: query 5 kinds of breast cancer low value care in 91~92 outpatient dataset
+DATA SETS: Tmp1.Tcdb_breast91.sas7bdat, Tmp1.Tcdb_breast92.sas7bdat, and merged datasets
+PROGRAMMER: Run Xiang 
+********************************************/
+
 libname Run  "H:\BreastCancer";
 
 /* tcdb-91~92 breat cancer dataset*/;
@@ -7,18 +15,20 @@ data r.tcdb9192;
 set  tcdb91  tcdb92;
 run;
 
-/*1,no whole-breast rt in 25 fractions in 50 years of age and older with early-stage invasive breast cancer*/
- /*CTV_L¡BCTV_H*/
+/*1, whole-breast radiation therapy, in 25 fractions, in 50 years of age and older with early-stage invasive breast cancer*/
 
-/*breast-conserving surgery, OPTYPE 2 number code*/
+/*only patient with breast-conserving surgery, OPTYPE 2 number code*/
 data t2; set tcdb9192;
 op=substr(OPTYPE,1,2)*1;
 proc means/univariate; 
 var OP;
 run;
-/*19 Local tumor destruction, NOS¡A20 Partial mastectomy, NOS; less than total mastectomy, NOS¡A
-21 Partial mastectomy WITH nipple resection¡A22 Lumpectomy or excisional biopsy¡A
-23 Reexcision of the biopsy site for gross or microscopic residual disease¡A
+
+/*types of surgery*/
+/*19 Local tumor destruction, 
+20 Partial mastectomy(less than total mastectomy)
+21 Partial mastectomy WITH nipple resection, 22 Lumpectomy or excisional biopsy,
+23 Reexcision of the biopsy site for gross or microscopic residual disease,
 24 Segmental mastectomy (including wedge resection, quadrantectomy, tylectomy)
 30 Subcutaneous mastectomy*/
 data r.BCS_1; set r.tcdb9192; /*total smaple size: 1448 */
@@ -45,7 +55,7 @@ age=treatdate-birthyear;
 if age<50 then delete;
 run;
 
-/*CTV_L¡BCTV_H fractionation*/
+/*number of fractionation*/
 data r.CTL_1; set  r.age50;
 proc means; var RTH_NF; 
 run;
@@ -98,9 +108,9 @@ run; /* keep ID from original dataset*/
 
 
 /*4, Don't perform axillary lymph node dissection for clinical stages I and II breast cancer 
-with clinically negative lymph nodes without SLNB.*/
+with clinically negative lymph nodes without Sentinel Lymph Node Biopsy  (SLNB).*/
 
-/* stages I and II breast cancer */
+/* only stages I and II breast cancer */
 data r.earlyBC; set r.tcdb9192;
 if substr(PSTAGE,1,3) in ('1','1A', '1B1', '1C', '2','2A', '2B') then earlyBC=1;
 else earlybc=0;
@@ -116,7 +126,7 @@ data ALND2; set r.earlyBC; /*distribution of lymphenode operation*/
 proc freq data= r.ALND; table LNSCOPE ; run; 
 
 data r.ALND; set  r.earlyBC; 
-if substr(LNSCOPE,1,1) in ('9') then delete;/* LNSCOPE has 1 code number*/
+if substr(LNSCOPE,1,1) in ('9') then delete;  /* LNSCOPE has 1 code number*/
 if substr(LNSCOPE,1,1) in ('3','7','8') then ALND=1; 
 else ALND=0; 
 proc freq; table ALND;
